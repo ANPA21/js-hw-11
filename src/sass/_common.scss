@@ -1,1 +1,39 @@
 @import '~node_modules/modern-normalize/modern-normalize.css';
+
+.containter {
+  padding: 15;
+}
+.search-wrapper {
+  display: flex;
+  justify-content: center;
+}
+.search-form {
+  justify-self: center;
+  max-width: 100%;
+  margin-bottom: 20px;
+}
+
+.gallery {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+
+  gap: 20px;
+}
+.photo-card {
+  background-color: grey;
+
+  border-radius: 6px;
+}
+.photo-card img {
+}
+
+.info {
+  display: flex;
+  background-color: rgb(196, 194, 194);
+}
+.info-item {
+  margin: 0;
+  padding: 5px;
+  font-size: 10px;
+}
