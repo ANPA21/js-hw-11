@@ -6,6 +6,7 @@ const BASE_URL = 'https://pixabay.com/api/';
 export default class searchApi {
   constructor() {
     this.searchQuery = '';
+    this.pageN = 1;
   }
   getData() {
     return axios({
@@ -15,11 +16,17 @@ export default class searchApi {
         image_type: 'photo',
         orientation: 'horizontal',
         safesearch: 'true',
+        page: this.pageN,
         per_page: 40,
       },
     });
   }
-
+  increasePage() {
+    this.pageN += 1;
+  }
+  resetPage() {
+    this.pageN = 1;
+  }
   get query() {
     return this.searchQuery;
   }
