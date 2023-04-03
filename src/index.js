@@ -7,7 +7,7 @@ const search = new searchApi();
 const refs = {
   form: document.querySelector('.search-form'),
   input: document.querySelector('[name="searchQuery"]'),
-  btn: document.querySelector('.load-more'),
+  btn: document.querySelector('.btn-wrapper'),
   gallery: document.querySelector('.gallery'),
   container: document.querySelector('.container'),
   info: document.querySelector('.info-containter'),
@@ -16,7 +16,6 @@ refs.form.addEventListener('submit', onSubmit);
 refs.btn.addEventListener('click', onLoadMoreClick);
 
 hideLoadMore();
-console.log(drawDiv);
 async function onSubmit(e) {
   e.preventDefault();
   search.query = refs.input.value.trim();
