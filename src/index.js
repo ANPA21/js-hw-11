@@ -55,7 +55,7 @@ async function onSubmit(e) {
 async function onLoadMoreClick(e) {
   e.preventDefault();
 
-  response = await search.getData();
+  let response = await search.getData();
 
   try {
     if (response.data.hits.length < 40) {
