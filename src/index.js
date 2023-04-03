@@ -34,10 +34,14 @@ async function onSubmit(e) {
   try {
     if (response.data.totalHits === 0) {
       throw error;
+    } else if (response.data.hits.length < 40) {
+      drawGallery(response);
+      hideLoadMore();
+    } else {
+      drawGallery(response);
+      search.increasePage();
+      showLoadMore();
     }
-    drawGallery(response);
-    search.increasePage();
-    showLoadMore();
   } catch {
     Notify.failure(
       'Sorry, there are no images matching your search query. Please try again.'
@@ -53,12 +57,11 @@ async function onLoadMoreClick(e) {
 
   try {
     if (response.data.hits.length < 40) {
-      drawGallery(response);
-      refs.gallery.insertAdjacentHTML(
-        'beforeend',
-        `<div class='info-container'><p class='info-text'>We're sorry, but you've reached the end of search results.</p></div>`
-      );
+      await drawGallery(response);
+      await drawDiv();
       hideLoadMore();
+      Notify.info(`We're sorry, but you've reached the end of search results.`);
+      return;
     }
     drawGallery(response);
   } catch {
@@ -100,7 +103,6 @@ function drawCard(o) {
 }
 function clearList() {
   refs.gallery.innerHTML = '';
-  // refs.container.removeChild(refs.info);
 }
 function drawGallery(d) {
   d.data.hits.forEach(hit => {
@@ -113,4 +115,10 @@ function showLoadMore() {
 }
 function hideLoadMore() {
   refs.btn.classList.add('is-hidden');
+}
+function drawDiv() {
+  refs.gallery.insertAdjacentHTML(
+    'beforeend',
+    `<div class='info-container'><p class='info-text'>We're sorry, but you've reached the end of search results.</p></div>`
+  );
 }
