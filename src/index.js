@@ -1,32 +1,38 @@
 import Notiflix from 'notiflix';
-import { Notify } from 'notiflix/build/notiflix-notify-aio';
+import SimpleLightbox from 'simplelightbox';
+import 'simplelightbox/dist/simple-lightbox.min.css';
 import searchApi from './js/fetch-services';
+
+import { refs } from './js/refs';
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
+import { smoothScroll } from './js/smoothScroll';
+import { drawGallery } from './js/drawGallery';
 import { drawDiv } from './js/drawDiv';
+import { clearGallery } from './js/clearGallery';
+import { hideLoadMore, showLoadMore } from './js/loadMoreBtn';
 
 const search = new searchApi();
-const refs = {
-  form: document.querySelector('.search-form'),
-  input: document.querySelector('[name="searchQuery"]'),
-  btn: document.querySelector('.btn-wrapper'),
-  gallery: document.querySelector('.gallery'),
-  container: document.querySelector('.container'),
-  info: document.querySelector('.info-containter'),
-};
+const slb = new SimpleLightbox('.gallery a', {
+  captionsData: 'alt',
+  captionDelay: 200,
+});
+
 refs.form.addEventListener('submit', onSubmit);
 refs.btn.addEventListener('click', onLoadMoreClick);
 
-hideLoadMore();
+hideLoadMore(refs);
 async function onSubmit(e) {
   e.preventDefault();
   search.query = refs.input.value.trim();
 
   if (search.query === '') {
-    clearList();
+    clearGallery(refs);
     Notify.info('Please, enter search query.');
+    hideLoadMore(refs);
     return;
   }
 
-  clearList();
+  clearGallery(refs);
   search.resetPage();
   let response = await search.getData();
 
@@ -34,20 +40,21 @@ async function onSubmit(e) {
     if (response.data.totalHits === 0) {
       throw error;
     } else if (response.data.hits.length < 40) {
-      drawGallery(response);
+      await drawGallery(response);
       Notify.info(`We found ${response.data.totalHits} images.`);
-      hideLoadMore();
+      hideLoadMore(refs);
     } else {
-      drawGallery(response);
+      await drawGallery(response);
       Notify.info(`We found ${response.data.totalHits} images.`);
       search.increasePage();
-      showLoadMore();
+      showLoadMore(refs);
     }
-  } catch {
+    slb.refresh();
+  } catch (error) {
     Notify.failure(
       'Sorry, there are no images matching your search query. Please try again.'
     );
-    hideLoadMore();
+    hideLoadMore(refs);
   }
 }
 
@@ -60,57 +67,16 @@ async function onLoadMoreClick(e) {
     if (response.data.hits.length < 40) {
       await drawGallery(response);
       await drawDiv(refs);
-      hideLoadMore();
+      hideLoadMore(refs);
       Notify.info(`We're sorry, but you've reached the end of search results.`);
       return;
     }
     drawGallery(response);
   } catch (error) {
-    console.log(error);
     Notify.failure('Something went wrong. Please try again.');
   }
 
   search.increasePage();
-}
-
-function drawCard(o) {
-  refs.gallery.insertAdjacentHTML(
-    'beforeend',
-    `<div class="photo-card">
-  <img src="${o.webformatURL}" alt="${o.tags}" loading="lazy" />
-  <div class="info">
-    <p class="info-item">
-      <b>Likes</b>
-      <b>${o.likes}</b>
-    </p>
-    <p class="info-item">
-      <b>Views</b>
-      <b>${o.views}</b>
-    </p>
-    <p class="info-item">
-      <b>Comments</b>
-      <b>${o.comments}</b>
-    </p>
-    <p class="info-item">
-      <b>Downloads</b>
-
-      <b>${o.downloads}</b>
-    </p>
-  </div>
-</div>`
-  );
-}
-function clearList() {
-  refs.gallery.innerHTML = '';
-}
-function drawGallery(d) {
-  d.data.hits.forEach(hit => {
-    drawCard(hit);
-  });
-}
-function showLoadMore() {
-  refs.btn.classList.remove('is-hidden');
-}
-function hideLoadMore() {
-  refs.btn.classList.add('is-hidden');
+  slb.refresh();
+  smoothScroll();
 }
