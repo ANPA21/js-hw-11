@@ -58,9 +58,7 @@ async function onSubmit(e) {
   }
 }
 
-async function onLoadMoreClick(e) {
-  e.preventDefault();
-
+async function onLoadMoreClick() {
   let response = await search.getData();
 
   try {
@@ -81,44 +79,17 @@ async function onLoadMoreClick(e) {
   smoothScroll();
 }
 
-// -------------------ПОПЫТКА В БЕСКОНЕЧНЫЙ СКРОЛЛ #3213--------------------------------------------
+const observerOption = {
+  treshold: 1,
+  rootMargin: '-10px',
+};
 
-let isFetching = false;
-
-async function moreStuff() {
-  let response = await search.getData();
-  isFetching = true;
-  try {
-    if (response.data.hits.length < 40) {
-      await drawGallery(response);
-      await drawDiv(refs);
-      hideLoadMore(refs);
-      Notify.info(`We're sorry, but you've reached the end of search results.`);
-      window.removeEventListener('scroll', infiniteScroll);
-
-      return;
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      onLoadMoreClick();
+      // setTimeout(onLoadMoreClick, 300); if you need delay for loading animation purposes
     }
-    await drawGallery(response);
-    // setTimeout(drawGallery(response, 1000));
-  } catch (error) {
-    Notify.failure('Something went wrong. Please try again.');
-  }
-
-  search.increasePage();
-  slb.refresh();
-  smoothScroll();
-  isFetching = false;
-}
-
-window.addEventListener('scroll', infiniteScroll);
-
-async function infiniteScroll() {
-  if (isFetching) {
-    return;
-  }
-  const { scrollHeight, scrollTop, clientHeight } = document.documentElement;
-  if (scrollTop + clientHeight > scrollHeight - 5) {
-    await moreStuff();
-    // setTimeout(moreStuff, 1000);
-  }
-}
+  });
+}, observerOption);
+observer.observe(refs.btn);
