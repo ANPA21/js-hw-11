@@ -80,3 +80,45 @@ async function onLoadMoreClick(e) {
   slb.refresh();
   smoothScroll();
 }
+
+// -------------------ПОПЫТКА В БЕСКОНЕЧНЫЙ СКРОЛЛ #3213--------------------------------------------
+
+let isFetching = false;
+
+async function moreStuff() {
+  let response = await search.getData();
+  isFetching = true;
+  try {
+    if (response.data.hits.length < 40) {
+      await drawGallery(response);
+      await drawDiv(refs);
+      hideLoadMore(refs);
+      Notify.info(`We're sorry, but you've reached the end of search results.`);
+      window.removeEventListener('scroll', infiniteScroll);
+
+      return;
+    }
+    await drawGallery(response);
+    // setTimeout(drawGallery(response, 1000));
+  } catch (error) {
+    Notify.failure('Something went wrong. Please try again.');
+  }
+
+  search.increasePage();
+  slb.refresh();
+  smoothScroll();
+  isFetching = false;
+}
+
+window.addEventListener('scroll', infiniteScroll);
+
+async function infiniteScroll() {
+  if (isFetching) {
+    return;
+  }
+  const { scrollHeight, scrollTop, clientHeight } = document.documentElement;
+  if (scrollTop + clientHeight > scrollHeight - 5) {
+    await moreStuff();
+    // setTimeout(moreStuff, 1000);
+  }
+}
